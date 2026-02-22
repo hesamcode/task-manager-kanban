@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fluxline Kanban</title>
+    <meta
+      name="description"
+      content="Fluxline Kanban is a high-end, productivity-focused task manager with keyboard-first workflows."
+    />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="css/style.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <div class="bg-orb orb-a" aria-hidden="true"></div>
+    <div class="bg-orb orb-b" aria-hidden="true"></div>
+
+    <main class="app-shell" id="appRoot">
+      <header class="hero card">
+        <div class="hero-copy">
+          <p class="eyebrow">Minimal execution space</p>
+          <h1>Fluxline Kanban</h1>
+        </div>
+
+        <div class="hero-actions">
+          <button id="themeToggle" type="button" class="btn ghost">Dark mode</button>
+          <button id="openFiltersBtn" type="button" class="btn ghost" aria-controls="filtersSheet" aria-expanded="false">
+            Filters
+          </button>
+        </div>
+      </header>
+
+      <section class="toolbar card" aria-label="Search and quick actions">
+        <label class="input-wrap" for="searchInput">
+          <span class="label">Search</span>
+          <input
+            id="searchInput"
+            type="search"
+            autocomplete="off"
+            placeholder="Search title, description, tags, subtasks"
+          />
+        </label>
+
+        <div class="shortcut-strip" aria-label="Shortcuts">
+          <span><kbd>N</kbd> New</span>
+          <span><kbd>/</kbd> Search</span>
+          <span><kbd>Alt</kbd> + <kbd>←</kbd>/<kbd>→</kbd> Move</span>
+        </div>
+      </section>
+
+      <section class="board-loading card" id="boardLoading" aria-live="polite">
+        <p>Loading board...</p>
+      </section>
+
+      <section class="board" aria-label="Kanban board" hidden>
+        <article class="lane card" data-status="backlog">
+          <header class="lane-head">
+            <h2>Backlog</h2>
+            <span class="count" id="count-backlog">0</span>
+          </header>
+          <ul id="lane-backlog" class="task-list" role="list" aria-label="Backlog tasks"></ul>
+          <p class="empty-state" data-empty="backlog">No tasks yet. Press N to add your next idea.</p>
+        </article>
+
+        <article class="lane card" data-status="in-progress">
+          <header class="lane-head">
+            <h2>In Progress</h2>
+            <span class="count" id="count-in-progress">0</span>
+          </header>
+          <ul id="lane-in-progress" class="task-list" role="list" aria-label="In progress tasks"></ul>
+          <p class="empty-state" data-empty="in-progress">Focus starts when you pull a task in.</p>
+        </article>
+
+        <article class="lane card" data-status="done">
+          <header class="lane-head">
+            <h2>Done</h2>
+            <span class="count" id="count-done">0</span>
+          </header>
+          <ul id="lane-done" class="task-list" role="list" aria-label="Done tasks"></ul>
+          <p class="empty-state" data-empty="done">Completed work will appear here.</p>
+        </article>
+      </section>
+
+      <section class="about card" id="about" aria-label="About Fluxline Kanban">
+        <h2>About</h2>
+        <p>
+          Fluxline Kanban is a productivity-first workspace crafted for focused daily execution and accessible workflows,
+          built by
+          <a
+            href="https://hesamkhorshidi.github.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit Hesam Khorshidi portfolio website"
+          >
+            Hesam Khorshidi
+          </a>
+          with vanilla web technologies.
+        </p>
+      </section>
+    </main>
+
+    <button id="fabTask" class="fab" type="button" aria-label="Create new task">+</button>
+
+    <section
+      id="taskModal"
+      class="modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="taskModalTitle"
+      aria-describedby="taskModalDescription"
+      hidden
+    >
+      <div class="modal-backdrop" data-close-modal="task"></div>
+      <div class="modal-panel" role="document">
+        <header class="modal-head">
+          <h2 id="taskModalTitle">New Task</h2>
+          <button type="button" class="btn ghost" data-close-modal="task">Close</button>
+        </header>
+
+        <p id="taskModalDescription" class="modal-description">
+          Capture clear outcomes, set due dates, and split tasks into subtasks.
+        </p>
+
+        <form id="taskForm" novalidate>
+          <input id="taskId" type="hidden" />
+
+          <label class="field" for="taskTitle">
+            <span class="label">Title</span>
+            <input id="taskTitle" name="taskTitle" type="text" maxlength="120" required />
+          </label>
+
+          <label class="field" for="taskDescription">
+            <span class="label">Description</span>
+            <textarea id="taskDescription" name="taskDescription" maxlength="1000" rows="3"></textarea>
+          </label>
+
+          <div class="field-grid">
+            <label class="field" for="taskPriority">
+              <span class="label">Priority</span>
+              <select id="taskPriority" name="taskPriority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label class="field" for="taskDueDate">
+              <span class="label">Due date</span>
+              <input id="taskDueDate" name="taskDueDate" type="date" />
+            </label>
+
+            <label class="field" for="taskStatus">
+              <span class="label">Column</span>
+              <select id="taskStatus" name="taskStatus">
+                <option value="backlog">Backlog</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field" for="taskTags">
+            <span class="label">Tags (comma separated)</span>
+            <input id="taskTags" name="taskTags" type="text" placeholder="design, docs, sprint" />
+          </label>
+
+          <div class="field">
+            <span class="label">Subtasks checklist</span>
+            <div class="subtask-input-row">
+              <input id="subtaskInput" type="text" placeholder="Add subtask" />
+              <button id="addSubtaskBtn" type="button" class="btn ghost">Add</button>
+            </div>
+            <ul id="subtaskDraftList" class="subtask-list" aria-live="polite"></ul>
+          </div>
+
+          <footer class="modal-actions">
+            <button id="deleteTaskBtn" type="button" class="btn danger" hidden>Delete</button>
+            <div class="modal-actions-right">
+              <button type="button" class="btn ghost" data-close-modal="task">Cancel</button>
+              <button id="saveTaskBtn" type="submit" class="btn primary">Save Task</button>
+            </div>
+          </footer>
+        </form>
+      </div>
+    </section>
+
+    <section
+      id="filtersSheet"
+      class="filters-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="filtersTitle"
+      hidden
+    >
+      <div class="sheet-backdrop" data-close-modal="filters"></div>
+      <div class="sheet-panel" role="document">
+        <header class="sheet-head">
+          <h2 id="filtersTitle">Filters</h2>
+          <button type="button" class="btn ghost" data-close-modal="filters">Close</button>
+        </header>
+
+        <div class="sheet-content">
+          <label class="field" for="filterPriority">
+            <span class="label">Priority</span>
+            <select id="filterPriority">
+              <option value="all">All</option>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+            </select>
+          </label>
+
+          <label class="field" for="filterDue">
+            <span class="label">Due date</span>
+            <select id="filterDue">
+              <option value="all">Any</option>
+              <option value="overdue">Overdue</option>
+              <option value="week">This week</option>
+            </select>
+          </label>
+
+          <label class="field" for="filterTags">
+            <span class="label">Tags</span>
+            <input id="filterTags" type="text" placeholder="frontend, urgent" />
+          </label>
+        </div>
+
+        <footer class="sheet-actions">
+          <button id="clearFiltersBtn" type="button" class="btn ghost">Clear</button>
+          <button id="applyFiltersBtn" type="button" class="btn primary">Apply</button>
+        </footer>
+      </div>
+    </section>
+
+    <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <footer class="app-footer">
+      <p>
+        Built by
+        <a href="https://hesamkhorshidi.github.io"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Visit Hesam Khorshidi portfolio website">
+          Hesam Khorshidi
+        </a>
+      </p>
+    </footer>
+  </body>
+</html>
