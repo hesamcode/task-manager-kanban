@@ -115,5 +115,5 @@ Migration behavior:
 - Data is re-saved in the current version after hydration.
 
 Author
-Hesam Khorshidi
-Portfolio: https://hesamkhorshidi.github.io
+HesamCode
+Portfolio: https://hesamcode.github.io
